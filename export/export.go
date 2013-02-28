@@ -34,18 +34,10 @@ func Export(w io.Writer, world *data.World) (err error) {
 		</div>
 `, world.Seed, world.Seed))
 
-	/*handle(fmt.Fprint(w, "<h3>Noise signature</h3>\n<pre>"))
-
-	noise := reflect.ValueOf(world.Noise)
-	for i := 0; i < noise.NumField(); i++ {
-		f := noise.Field(i)
-		handle(fmt.Fprintf(w, "<strong>%s</strong>\n", noise.Type().Field(i).Name))
-
-		for j := 0; j < f.Len(); j++ {
-			handle(fmt.Fprintf(w, "% x\n", f.Index(j).Interface()))
-		}
+	for i := uint64(0); i < world.AreaCount; i++ {
+		a := world.Area(i)
+		_ = a
 	}
-	handle(fmt.Fprintf(w, `</pre>`))*/
 
 	handle(fmt.Fprintf(w, `
 	</div>
