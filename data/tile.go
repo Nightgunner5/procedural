@@ -8,7 +8,7 @@ type Tile struct {
 
 type Teleport struct {
 	Area uint64
-	X, Y uint
+	X, Y int
 }
 
 type Terrain struct {
@@ -37,4 +37,26 @@ func NewPlant(r *Rand, significant bool) *Object {
 		B: uint8(r.Intn(128)),
 		// TODO
 	}
+}
+
+func NewBuildingTerrain(r *Rand) *Terrain {
+	switch r.Intn(2) {
+	case 0:
+		// stone
+		return &Terrain{
+			R: uint8(r.Intn(32) + 112),
+			G: uint8(r.Intn(32) + 112),
+			B: uint8(r.Intn(32) + 112),
+			// TODO
+		}
+	case 1:
+		// wood
+		return &Terrain{
+			R: uint8(r.Intn(32) + 200),
+			G: uint8(r.Intn(32) + 128),
+			B: uint8(r.Intn(32) + 64),
+			// TODO
+		}
+	}
+	panic("unreachable")
 }

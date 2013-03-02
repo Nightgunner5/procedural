@@ -18,7 +18,7 @@ func (w *World) Init() {
 	w.__TODO__areacache = make(map[uint64]*Area) // TODO: actual saving/loading
 
 	a := w.NewArea(w.Rand, Town)
-	a.Generate()
+	a.Generate(w)
 	w.SaveArea(a)
 	w.CurrentArea = a.ID
 }

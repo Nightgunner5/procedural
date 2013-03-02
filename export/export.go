@@ -38,7 +38,7 @@ func Export(w io.Writer, world *data.World) (err error) {
 	for i := uint64(0); i < world.AreaCount; i++ {
 		a := world.Area(i)
 		handle(fmt.Fprintf(w, `
-		<section>
+		<section class="clearfix">
 			<h3>Area %d: %s</h3>`, i, a.Name))
 		if !a.Generated {
 			handle(fmt.Fprintf(w, `

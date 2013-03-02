@@ -27,24 +27,24 @@ func (a *Area) generateName() {
 	a.Name = "Unnamed Area" // TODO: names
 }
 
-func (a *Area) Generate() {
+func (a *Area) Generate(w *World) {
 	if a.Generated {
 		return
 	}
 
 	switch a.Type {
 	case Road:
-		a.generateRoad()
+		a.generateRoad(w)
 	case Town:
-		a.generateTown()
+		a.generateTown(w)
 	case Building:
-		a.generateBuilding()
+		a.generateBuilding(w)
 	}
 
 	a.Generated = true
 }
 
-func (a *Area) generateRoad() {
+func (a *Area) generateRoad(w *World) {
 	for x := range a.Tiles {
 		for y := range a.Tiles[x] {
 			_ = y // TODO
@@ -52,7 +52,7 @@ func (a *Area) generateRoad() {
 	}
 }
 
-func (a *Area) generateTown() {
+func (a *Area) generateTown(w *World) {
 	ground := make([]*Terrain, a.Rand.Intn(10)+1)
 	for i := range ground {
 		ground[i] = NewTerrain(a.Rand)
@@ -60,6 +60,56 @@ func (a *Area) generateTown() {
 	groundCover := make([]*Object, a.Rand.Intn(10)+1)
 	for i := range groundCover {
 		groundCover[i] = NewPlant(a.Rand, false)
+	}
+
+	street := NewBuildingTerrain(a.Rand)
+	building := make([]*Terrain, a.Rand.Intn(3)+1)
+	for i := range building {
+		building[i] = NewBuildingTerrain(a.Rand)
+	}
+
+buildingLoop:
+	for i := a.Rand.Intn(8) + 4; i > 0; i-- {
+		mat := building[a.Rand.Intn(len(building))]
+
+		x0 := areaSize/2 + i*8 - 3*8
+		y0 := areaSize/2 - 6/2
+		x1 := x0 + 8 - 1
+		y1 := y0 + 6 - 1
+
+		for x := x0; x < x1; x++ {
+			for y := y0; y <= y1; y++ {
+				if a.Tiles[x][y] != nil {
+					continue buildingLoop
+				}
+			}
+		}
+		for x := x0 - 1; x <= x1; x++ {
+			a.Tiles[x][y1] = &Tile{
+				Terrain: street,
+			}
+		}
+		for x := x0; x < x1; x++ {
+			for y := y0; y < y1; y++ {
+				a.Tiles[x][y] = &Tile{
+					Terrain: mat,
+				}
+			}
+		}
+		a.Tiles[(x0+x1)/2][y1-1].Terrain = street
+		subarea := w.NewArea(a.Rand, Building)
+		a.Tiles[(x0+x1)/2][y1-1].Teleport = &Teleport{
+			Area: subarea.ID,
+			X:    areaSize / 2,
+			Y:    areaSize - 2,
+		}
+		subarea.Tiles[areaSize/2][areaSize-1] = &Tile{
+			Teleport: &Teleport{
+				Area: a.ID,
+				X:    (x0 + x1) / 2,
+				Y:    y1,
+			},
+		}
 	}
 
 	var (
@@ -77,7 +127,14 @@ func (a *Area) generateTown() {
 			}
 
 			var t Tile
+			if a.Tiles[x][y] != nil {
+				t = *a.Tiles[x][y]
+			}
 			a.Tiles[x][y] = &t
+
+			if t.Terrain != nil {
+				continue
+			}
 
 			f := noise.Noise(float64(x)/48, float64(y)/48, groundTypeNoise)/2 + 0.5
 			t.Terrain = ground[int(f*float64(len(ground)))%len(ground)]
@@ -88,7 +145,7 @@ func (a *Area) generateTown() {
 	}
 }
 
-func (a *Area) generateBuilding() {
+func (a *Area) generateBuilding(w *World) {
 	for x := range a.Tiles {
 		for y := range a.Tiles[x] {
 			_ = y // TODO

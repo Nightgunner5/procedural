@@ -14,7 +14,7 @@ func genMap(a *data.Area) *image.RGBA {
 	for x := range a.Tiles {
 		for y := range a.Tiles[x] {
 			t := a.Tiles[x][y]
-			if t == nil {
+			if t == nil || t.Terrain == nil {
 				continue
 			}
 
