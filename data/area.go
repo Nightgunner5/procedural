@@ -62,10 +62,10 @@ func (a *Area) generateTown(w *World) {
 		groundCover[i] = NewPlant(a.Rand, false)
 	}
 
-	street := NewBuildingTerrain(a.Rand)
+	street := NewBuildingTerrain(a.Rand, true)
 	building := make([]*Terrain, a.Rand.Intn(3)+1)
 	for i := range building {
-		building[i] = NewBuildingTerrain(a.Rand)
+		building[i] = NewBuildingTerrain(a.Rand, false)
 	}
 
 buildingLoop:
@@ -73,9 +73,9 @@ buildingLoop:
 		mat := building[a.Rand.Intn(len(building))]
 
 		x0 := areaSize/2 + i*8 - 3*8
-		y0 := areaSize/2 - 6/2
+		y0 := areaSize/2 - 8/2
 		x1 := x0 + 8 - 1
-		y1 := y0 + 6 - 1
+		y1 := y0 + 8 - 1
 
 		for x := x0; x < x1; x++ {
 			for y := y0; y <= y1; y++ {

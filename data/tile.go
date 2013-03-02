@@ -12,7 +12,8 @@ type Teleport struct {
 }
 
 type Terrain struct {
-	R, G, B uint8
+	R, G, B  uint8
+	Passable bool
 	// TODO
 }
 
@@ -23,9 +24,10 @@ type Object struct {
 
 func NewTerrain(r *Rand) *Terrain {
 	return &Terrain{
-		R: uint8(r.Intn(256)),
-		G: uint8(r.Intn(128)),
-		B: uint8(r.Intn(128)),
+		R:        uint8(r.Intn(256)),
+		G:        uint8(r.Intn(128)),
+		B:        uint8(r.Intn(128)),
+		Passable: true,
 		// TODO
 	}
 }
@@ -39,22 +41,24 @@ func NewPlant(r *Rand, significant bool) *Object {
 	}
 }
 
-func NewBuildingTerrain(r *Rand) *Terrain {
+func NewBuildingTerrain(r *Rand, passable bool) *Terrain {
 	switch r.Intn(2) {
 	case 0:
 		// stone
 		return &Terrain{
-			R: uint8(r.Intn(32) + 112),
-			G: uint8(r.Intn(32) + 112),
-			B: uint8(r.Intn(32) + 112),
+			R:        uint8(r.Intn(32) + 112),
+			G:        uint8(r.Intn(32) + 112),
+			B:        uint8(r.Intn(32) + 112),
+			Passable: passable,
 			// TODO
 		}
 	case 1:
 		// wood
 		return &Terrain{
-			R: uint8(r.Intn(32) + 200),
-			G: uint8(r.Intn(32) + 128),
-			B: uint8(r.Intn(32) + 64),
+			R:        uint8(r.Intn(32) + 200),
+			G:        uint8(r.Intn(32) + 128),
+			B:        uint8(r.Intn(32) + 64),
+			Passable: passable,
 			// TODO
 		}
 	}
