@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/Nightgunner5/procedural/data"
 	"io"
-	//"reflect"
 )
 
 func Export(w io.Writer, world *data.World) (err error) {
@@ -36,7 +35,10 @@ func Export(w io.Writer, world *data.World) (err error) {
 
 	for i := uint64(0); i < world.AreaCount; i++ {
 		a := world.Area(i)
-		_ = a
+		handle(fmt.Fprintf(w, `
+		<section>
+			<h3>Area %d: %s</h3>
+		</section>`, i, a.Name))
 	}
 
 	handle(fmt.Fprintf(w, `
