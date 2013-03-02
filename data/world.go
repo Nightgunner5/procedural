@@ -19,6 +19,7 @@ func (w *World) Init() {
 
 	a := w.NewArea(w.Rand, Town)
 	a.Generate()
+	w.SaveArea(a)
 	w.CurrentArea = a.ID
 }
 

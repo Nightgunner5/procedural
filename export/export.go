@@ -1,8 +1,10 @@
 package export
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/Nightgunner5/procedural/data"
+	"image/png"
 	"io"
 )
 
@@ -37,8 +39,24 @@ func Export(w io.Writer, world *data.World) (err error) {
 		a := world.Area(i)
 		handle(fmt.Fprintf(w, `
 		<section>
-			<h3>Area %d: %s</h3>
-		</section>`, i, a.Name))
+			<h3>Area %d: %s</h3>`, i, a.Name))
+		if !a.Generated {
+			handle(fmt.Fprintf(w, `
+			<p><em>Unexplored</em></p>
+		</section>`))
+			continue
+		}
+
+		handle(fmt.Fprintf(w, `
+			<img src="data:image/png;base64,`))
+		img := genMap(a)
+		imgOut := base64.NewEncoder(base64.StdEncoding, w)
+		handle(0, png.Encode(imgOut, img))
+		imgOut.Close()
+		handle(fmt.Fprintf(w, `" class="pull-right">`))
+
+		handle(fmt.Fprintf(w, `
+		</section>`))
 	}
 
 	handle(fmt.Fprintf(w, `
