@@ -42,6 +42,8 @@ func (a *Area) Generate(w *World) {
 	}
 
 	a.Generated = true
+
+	w.SaveArea(a)
 }
 
 func (a *Area) generateRoad(w *World) {
@@ -69,46 +71,147 @@ func (a *Area) generateTown(w *World) {
 	}
 
 buildingLoop:
-	for i := a.Rand.Intn(8) + 4; i > 0; i-- {
-		mat := building[a.Rand.Intn(len(building))]
+	for i := -2; i < 2; i++ {
+		for j := 0; j <= 1; j++ {
+			mat := building[a.Rand.Intn(len(building))]
 
-		x0 := areaSize/2 + i*8 - 3*8
-		y0 := areaSize/2 - 8/2
-		x1 := x0 + 8 - 1
-		y1 := y0 + 8 - 1
+			x0 := areaSize/2 + i*10 + 1
+			y0 := areaSize/2 - 10*j
 
-		for x := x0; x < x1; x++ {
-			for y := y0; y <= y1; y++ {
-				if a.Tiles[x][y] != nil {
-					continue buildingLoop
+			if i < 0 {
+				x0--
+			} else {
+				x0++
+			}
+
+			x1 := x0 + 8
+			y1 := y0 + 8
+			x2 := x0 + 2
+			y2 := y1 - 1
+			if j == 0 {
+				x2 = x1 - 3
+				y2 = y0
+			}
+
+			for x := x0; x < x1; x++ {
+				for y := y0; y < y2; y++ {
+					if a.Tiles[x][y] != nil {
+						continue buildingLoop
+					}
 				}
 			}
-		}
-		for x := x0 - 1; x <= x1; x++ {
-			a.Tiles[x][y1] = &Tile{
-				Terrain: street,
+			if j == 1 {
+				for x := x0 - 1; x <= x1; x++ {
+					a.Tiles[x][y1] = &Tile{
+						Terrain: street,
+					}
+					a.Tiles[x][y1+1] = &Tile{
+						Terrain: street,
+					}
+				}
 			}
+			for x := x0; x < x1; x++ {
+				for y := y0; y < y1; y++ {
+					a.Tiles[x][y] = &Tile{
+						Terrain: mat,
+					}
+				}
+				for y := y1 + 2; y < y2; y++ {
+					a.Tiles[x][y] = &Tile{
+						Terrain: mat,
+					}
+				}
+			}
+			a.Tiles[x2][y2].Terrain = street
+			subarea := w.NewArea(a.Rand, Building)
+			a.Tiles[x2][y2].Teleport = &Teleport{
+				Area: subarea.ID,
+				X:    areaSize / 2,
+				Y:    areaSize - 2,
+			}
+			subarea.Tiles[areaSize/2][areaSize-1] = &Tile{
+				Teleport: &Teleport{
+					Area: a.ID,
+					X:    x2,
+					Y:    y2,
+				},
+			}
+			w.SaveArea(subarea)
 		}
-		for x := x0; x < x1; x++ {
-			for y := y0; y < y1; y++ {
+	}
+
+	for x := areaSize/2 - 1; x < areaSize/2+1; x++ {
+		for y := areaSize / 8; y < areaSize*7/8; y++ {
+			if a.Tiles[x][y] != nil {
+				continue
+			}
+
+			if y == areaSize/8 || y == areaSize*7/8-1 {
+				if x == areaSize/2 {
+					t := a.Tiles[x-1][y].Teleport
+					a.Tiles[x][y] = &Tile{
+						Terrain: street,
+						Teleport: &Teleport{
+							Area: t.Area,
+							X:    x,
+							Y:    t.Y,
+						},
+					}
+					subarea := w.Area(t.Area)
+					subarea.Tiles[x][t.Y] = &Tile{
+						Terrain: street,
+						Teleport: &Teleport{
+							Area: a.ID,
+							X:    x,
+							Y:    y,
+						},
+					}
+					w.SaveArea(subarea)
+					continue
+				}
+
+				subarea := w.NewArea(a.Rand, Road)
+				if y < areaSize/2 {
+					a.Tiles[x][y] = &Tile{
+						Terrain: street,
+						Teleport: &Teleport{
+							Area: subarea.ID,
+							X:    x,
+							Y:    0,
+						},
+					}
+					subarea.Tiles[x][0] = &Tile{
+						Terrain: street,
+						Teleport: &Teleport{
+							Area: a.ID,
+							X:    x,
+							Y:    y,
+						},
+					}
+				} else {
+					a.Tiles[x][y] = &Tile{
+						Terrain: street,
+						Teleport: &Teleport{
+							Area: subarea.ID,
+							X:    x,
+							Y:    areaSize - 1,
+						},
+					}
+					subarea.Tiles[x][areaSize-1] = &Tile{
+						Terrain: street,
+						Teleport: &Teleport{
+							Area: a.ID,
+							X:    x,
+							Y:    y,
+						},
+					}
+				}
+				w.SaveArea(subarea)
+			} else {
 				a.Tiles[x][y] = &Tile{
-					Terrain: mat,
+					Terrain: street,
 				}
 			}
-		}
-		a.Tiles[(x0+x1)/2][y1-1].Terrain = street
-		subarea := w.NewArea(a.Rand, Building)
-		a.Tiles[(x0+x1)/2][y1-1].Teleport = &Teleport{
-			Area: subarea.ID,
-			X:    areaSize / 2,
-			Y:    areaSize - 2,
-		}
-		subarea.Tiles[areaSize/2][areaSize-1] = &Tile{
-			Teleport: &Teleport{
-				Area: a.ID,
-				X:    (x0 + x1) / 2,
-				Y:    y1,
-			},
 		}
 	}
 
@@ -121,7 +224,7 @@ buildingLoop:
 
 	for x := range a.Tiles {
 		for y := range a.Tiles[x] {
-			maxSize := int(areaSize/2 - noise.Noise(float64(x)/8, float64(y)/8, areaSizeNoise)*(areaSize/8))
+			maxSize := int(areaSize/2 - noise.Noise(float64(x)/8, float64(y)/8, areaSizeNoise)*(areaSize/8) - areaSize/8)
 			if (x-areaSize/2)*(x-areaSize/2)+(y-areaSize/2)*(y-areaSize/2) > maxSize*maxSize {
 				continue
 			}

@@ -18,6 +18,12 @@ func genMap(a *data.Area) *image.RGBA {
 				continue
 			}
 
+			if t.Teleport != nil {
+				draw.Draw(img, image.Rect(x<<3, (y-1)<<2, (x+1)<<3, (y+1)<<2), image.Black, image.ZP, draw.Src)
+				draw.Draw(img, image.Rect(x<<3+1, (y-1)<<2+1, (x+1)<<3-1, (y+1)<<2-1), image.White, image.ZP, draw.Src)
+				continue
+			}
+
 			draw.Draw(img, image.Rect(x<<3, y<<2, (x+1)<<3, (y+1)<<2), image.NewUniform(color.RGBA{t.Terrain.R, t.Terrain.G, t.Terrain.B, 255}), image.ZP, draw.Src)
 			if !t.Terrain.Passable {
 				draw.Draw(img, image.Rect(x<<3, (y-1)<<2, (x+1)<<3, y<<2), image.NewUniform(color.RGBA{
