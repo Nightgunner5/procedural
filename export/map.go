@@ -9,7 +9,7 @@ import (
 
 func genMap(a *data.Area) *image.RGBA {
 	r := data.NewRand(int64(a.ID))
-	img := image.NewRGBA(image.Rect(0, 0, len(a.Tiles)<<3, len(a.Tiles[0])<<2))
+	img := image.NewRGBA(image.Rect(0, -1<<2, len(a.Tiles)<<3, len(a.Tiles[0])<<2))
 
 	for x := range a.Tiles {
 		for y := range a.Tiles[x] {
